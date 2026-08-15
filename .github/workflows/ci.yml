@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SBCL and OpenGL/FreeGLUT libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sbcl curl freeglut3-dev libgl1-mesa-dev
+
+      - name: Install Quicklisp
+        run: |
+          curl -O https://beta.quicklisp.org/quicklisp.lisp
+          sbcl --non-interactive \
+            --load quicklisp.lisp \
+            --eval '(quicklisp-quickstart:install :path #P"/home/runner/quicklisp/")' \
+            --eval '(quit)'
+
+      - name: Install Lisp dependencies
+        run: |
+          sbcl --non-interactive \
+            --load /home/runner/quicklisp/setup.lisp \
+            --eval '(ql:quickload (quote (:cl-opengl :cl-glu :cl-glut)))' \
+            --eval '(quit)'
+
+      - name: Verify independent example environments
+        run: bash scripts/check-examples.sh
+
+      - name: Regression - compile and load checkout through quickstart
+        run: |
+          sbcl --non-interactive \
+            --load /home/runner/quicklisp/setup.lisp \
+            --load quickstart.lisp \
+            --eval '(format t "~&Quickstart/ASDF load OK.~%")' \
+            --eval '(quit)'
+
+      - name: Run tests
+        run: |
+          sbcl --load /home/runner/quicklisp/setup.lisp --script run-tests.lisp
