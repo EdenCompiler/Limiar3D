@@ -1,6 +1,6 @@
 (asdf:defsystem #:limiar3d
   :description "Limiar 3D - motor 3D didatico, hackeavel e single-file em Common Lisp"
-  :author "Limiar 3D contributors"
+  :author "Bruno"
   :license "MIT"
   :version "0.2.7"
   :depends-on (#:cl-opengl #:cl-glu #:cl-glut)
